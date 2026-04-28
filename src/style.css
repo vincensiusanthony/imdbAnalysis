@@ -1,14 +1,44 @@
 @import "tailwindcss";
 
-/* Best Practice: Definisikan warna tema global di sini */
 @theme {
-  --color-darkbg: #0f172a;
-  --color-cardbg: #1e293b;
-  --color-primary: #3b82f6;
+  /* Warna Tech Blue Modern */
+  --color-darkbg: #0b1121; /* Midnight Tech Blue */
+  --color-cardbg: rgba(15, 23, 42, 0.6); /* Transparan untuk efek Glass */
+  --color-primary: #0ea5e9; /* Sky Blue */
+  --color-accent: #00f0ff; /* Neon Cyan */
 }
 
 body {
   background-color: var(--color-darkbg);
+  /* Tambahkan pattern background subtle (opsional untuk kesan tech) */
+  background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%);
   color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Animasi Kustom untuk Card Hover */
+.tech-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tech-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.2);
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+.tech-card:hover::before {
+  opacity: 1;
 }
