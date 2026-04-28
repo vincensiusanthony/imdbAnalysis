@@ -36,10 +36,17 @@
           </div>
         </div>
 
-        <div class="bg-cardbg p-6 rounded-2xl border border-slate-700 shadow-xl col-span-2">
+        <div class="bg-cardbg p-6 rounded-2xl border border-slate-700 shadow-xl col-span-1 lg:col-span-2">
           <h4 class="text-lg font-semibold text-white mb-4">3. Tren Rilis Konten</h4>
           <div class="h-64">
             <Line :data="trendChartData" :options="chartOptions" />
+          </div>
+        </div>
+
+        <div class="bg-cardbg p-6 rounded-2xl border border-slate-700 shadow-xl col-span-1 lg:col-span-3">
+          <h4 class="text-lg font-semibold text-white mb-4">4. Top 10 Genre Terbanyak</h4>
+          <div class="h-80">
+            <Bar :data="genreChartData" :options="horizontalBarOptions" />
           </div>
         </div>
       </div>
@@ -50,39 +57,26 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useMovies } from '../composables/useMovies'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
-import { Doughnut, Line } from 'vue-chartjs'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler } from 'chart.js'
+import { Doughnut, Line, Bar } from 'vue-chartjs'
 
-// Register elemen Chart.js yang akan digunakan
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler)
-// Panggil state global
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler)
+
 const { movies, isLoading, error, fetchMovies } = useMovies()
 
-// Jalankan fetch saat halaman dibuka
-onMounted(() => {
-  fetchMovies()
-})
+onMounted(() => fetchMovies())
 
-// ==========================================
-// LOGIKA AGREGASI DATA (COMPUTED PROPERTIES)
-// ==========================================
-
-// 1. Hitung Nilai Kartu (KPIs)
 const totalMovies = computed(() => movies.value.length)
-
 const avgRating = computed(() => {
   if (movies.value.length === 0) return 0
   const sum = movies.value.reduce((acc, curr) => acc + (parseFloat(curr.imdbrating) || 0), 0)
   return (sum / movies.value.length).toFixed(1)
 })
-
 const totalVotes = computed(() => {
   const sum = movies.value.reduce((acc, curr) => acc + (parseInt(curr.numvotes) || 0), 0)
-  return (sum / 1000000).toFixed(1) // Konversi ke Juta (Million)
+  return (sum / 1000000).toFixed(1)
 })
-
 const topGenre = computed(() => {
-  // Logic simpel mencari genre terbanyak
   const counts = {}
   movies.value.forEach(m => {
     if(m.genres) {
@@ -95,7 +89,6 @@ const topGenre = computed(() => {
   return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '')
 })
 
-// 2. Data untuk Doughnut Chart
 const typeChartData = computed(() => {
   let movieCount = 0, tvCount = 0
   movies.value.forEach(m => {
@@ -104,16 +97,10 @@ const typeChartData = computed(() => {
   })
   return {
     labels: ['Movie', 'TV Show'],
-    datasets: [{
-      data: [movieCount, tvCount],
-      backgroundColor: ['#3b82f6', '#ef4444'],
-      borderWidth: 0,
-      hoverOffset: 10
-    }]
+    datasets: [{ data: [movieCount, tvCount], backgroundColor: ['#3b82f6', '#ef4444'], borderWidth: 0 }]
   }
 })
 
-// 3. Data untuk Line Chart (Tren)
 const trendChartData = computed(() => {
   let yearCounts = {}
   movies.value.forEach(d => {
@@ -126,33 +113,33 @@ const trendChartData = computed(() => {
   return {
     labels: sortedYears,
     datasets: [{
-      label: 'Total Rilis',
-      data: sortedYears.map(y => yearCounts[y]),
-      borderColor: '#f59e0b',
-      backgroundColor: 'rgba(245, 158, 11, 0.1)',
-      fill: true,
-      tension: 0.4
+      label: 'Total Rilis', data: sortedYears.map(y => yearCounts[y]),
+      borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4
     }]
   }
 })
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { labels: { color: '#cbd5e1' } } },
-  scales: {
-    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-    y: { ticks: { color: '#64748b' }, grid: { color: '#334155', borderDash: [5, 5] } }
+const genreChartData = computed(() => {
+  const counts = {}
+  movies.value.forEach(m => {
+    if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 })
+  })
+  const sorted = Object.keys(counts).map(k => ({name: k, count: counts[k]})).sort((a,b) => b.count - a.count).slice(0, 10)
+  return {
+    labels: sorted.map(g => g.name),
+    datasets: [{ label: 'Jumlah Titles', data: sorted.map(g => g.count), backgroundColor: '#8b5cf6', borderRadius: 4 }]
   }
+})
+
+const chartOptions = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#cbd5e1' } } },
+  scales: { x: { ticks: { color: '#64748b' }, grid: { display: false } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155', borderDash: [5, 5] } } }
+}
+
+const horizontalBarOptions = {
+  responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+  plugins: { legend: { display: false } },
+  scales: { x: { grid: { color: '#334155', borderDash: [5,5] }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#e2e8f0' } } }
 }
 </script>
-
-<style>
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
