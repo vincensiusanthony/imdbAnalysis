@@ -1,9 +1,20 @@
 <template>
   <div class="animate-fade-in relative z-10 flex flex-col h-full">
     <div class="mb-6 space-y-4">
-      <div>
-        <h2 class="text-2xl font-bold text-white">🗄️ Tech Database</h2>
-        <p class="text-primary text-sm font-mono">EXPLORING {{ movies.length.toLocaleString() }} RECORDS</p>
+      <div class="flex justify-between items-end">
+        <div>
+          <h2 class="text-2xl font-bold text-white">🗄️ Tech Database</h2>
+          <p class="text-primary text-sm font-mono">EXPLORING {{ movies.length.toLocaleString() }} RECORDS</p>
+        </div>
+        
+        <button 
+          @click="downloadCSV" 
+          :disabled="processedData.length === 0"
+          class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
+        >
+          <v-icon name="fa-database" scale="0.8" />
+          Export to CSV
+        </button>
       </div>
 
       <div class="bg-cardbg backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl flex flex-wrap gap-4">
@@ -73,11 +84,40 @@ import TablePagination from '../components/ui/TablePagination.vue'
 const { movies, isLoading, fetchMovies } = useMovies()
 onMounted(() => fetchMovies())
 
-// Panggil "mesin" tabel dari composable
 const { 
   filters, currentPage, itemsPerPage, resetFilters, 
   processedData, totalPages, startIndex, endIndex, paginatedData, sortBy, getSortIcon 
 } = useDataTable(movies)
+
+// 🔥 LOGIKA DOWNLOAD CSV
+const downloadCSV = () => {
+  const data = processedData.value
+  if (data.length === 0) return
+
+  // 1. Ambil Header dari objek pertama
+  const headers = Object.keys(data[0]).join(',')
+  
+  // 2. Map data ke string CSV (sanitize tanda koma di dalam teks)
+  const rows = data.map(obj => {
+    return Object.values(obj).map(val => {
+      let str = String(val ?? '').replace(/"/g, '""') // Escape double quotes
+      return `"${str}"`
+    }).join(',')
+  })
+
+  const csvContent = [headers, ...rows].join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  
+  // 3. Trigger Browser Download
+  const link = document.createElement("a")
+  link.setAttribute("href", url)
+  link.setAttribute("download", `imdb_export_${new Date().getTime()}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 </script>
 
 <style scoped> .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } </style>

@@ -4,57 +4,68 @@
       <div class="flex items-center justify-between h-20">
         
         <div class="flex items-center gap-3">
-          <img src="/logo-cakrawala-v2.png" alt="Logo Cakrawala" class="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]">
-          <h1 class="font-bold text-2xl text-white tracking-wide font-mono select-none hidden sm:block">
-            IMDB<span class="text-accent">PRO</span>
-          </h1>
+          <img src="/logo-cakrawala-v2.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]">
+          <h1 class="font-bold text-2xl text-white tracking-wide font-mono hidden sm:block">IMDB<span class="text-accent">PRO</span></h1>
         </div>
 
-        <nav class="hidden md:flex items-center gap-1 bg-slate-800/40 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-          <router-link to="/" class="nav-item" active-class="nav-active">
-            <v-icon name="fa-chart-pie" scale="1"/> Overview
-          </router-link>
-          <router-link to="/ratings" class="nav-item" active-class="nav-active">
-            <v-icon name="fa-star" scale="1"/> Ratings
-          </router-link>
-          <router-link to="/technical" class="nav-item" active-class="nav-active">
-            <v-icon name="fa-cogs" scale="1"/> Technical
-          </router-link>
-          <router-link to="/database" class="nav-item" active-class="nav-active">
-            <v-icon name="fa-database" scale="1"/> Database
-          </router-link>
+        <nav class="hidden md:flex items-center gap-1 bg-slate-800/40 p-1.5 rounded-2xl border border-slate-700/50">
+          <router-link to="/" class="nav-item" active-class="nav-active"><v-icon name="fa-chart-pie" scale="1"/> Overview</router-link>
+          <router-link to="/ratings" class="nav-item" active-class="nav-active"><v-icon name="fa-star" scale="1"/> Ratings</router-link>
+          <router-link to="/technical" class="nav-item" active-class="nav-active"><v-icon name="fa-cogs" scale="1"/> Technical</router-link>
+          <router-link to="/database" class="nav-item" active-class="nav-active"><v-icon name="fa-database" scale="1"/> Database</router-link>
         </nav>
 
         <div class="flex items-center gap-4">
+          
+          <div class="hidden lg:flex items-center gap-2 bg-slate-900/80 border border-slate-700/80 rounded-xl px-3 py-1.5 shadow-inner">
+            <span class="text-primary text-sm">📅</span>
+            <select v-model="yearFrom" class="bg-transparent text-slate-300 text-xs font-bold focus:outline-none cursor-pointer">
+              <option value="All">Start: All</option>
+              <option v-for="y in availableYears" :key="'from'+y" :value="y">{{ y }}</option>
+            </select>
+            <span class="text-slate-500">-</span>
+            <select v-model="yearTo" class="bg-transparent text-slate-300 text-xs font-bold focus:outline-none cursor-pointer">
+              <option value="All">End: 2023</option>
+              <option v-for="y in availableYears" :key="'to'+y" :value="y">{{ y }}</option>
+            </select>
+          </div>
+
           <div class="hidden lg:flex flex-col items-end">
             <span class="text-sm font-bold text-white">{{ currentRouteName }}</span>
             <span class="text-[10px] text-accent font-mono tracking-widest flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span> SYSTEM ONLINE
+              <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span> ONLINE
             </span>
           </div>
 
-          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden p-2 rounded-xl bg-slate-800 text-accent border border-slate-700 hover:bg-slate-700 transition-colors">
+          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden p-2 rounded-xl bg-slate-800 text-accent border border-slate-700">
             <v-icon :name="isMobileMenuOpen ? 'fa-times' : 'fa-bars'" scale="1.2"/>
           </button>
         </div>
-
       </div>
     </div>
 
     <transition name="slide-down">
-      <nav v-if="isMobileMenuOpen" class="md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-3xl px-4 py-4 flex flex-col gap-2 absolute w-full shadow-2xl">
-        <router-link to="/" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active">
-          <v-icon name="fa-chart-pie"/> Overview
-        </router-link>
-        <router-link to="/ratings" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active">
-          <v-icon name="fa-star"/> Ratings
-        </router-link>
-        <router-link to="/technical" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active">
-          <v-icon name="fa-cogs"/> Technical
-        </router-link>
-        <router-link to="/database" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active">
-          <v-icon name="fa-database"/> Database
-        </router-link>
+      <nav v-if="isMobileMenuOpen" class="md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-3xl absolute w-full shadow-2xl flex flex-col">
+        <div class="p-4 flex flex-col gap-2">
+          <router-link to="/" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active"><v-icon name="fa-chart-pie"/> Overview</router-link>
+          <router-link to="/ratings" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active"><v-icon name="fa-star"/> Ratings</router-link>
+          <router-link to="/technical" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active"><v-icon name="fa-cogs"/> Technical</router-link>
+          <router-link to="/database" @click="isMobileMenuOpen = false" class="mobile-nav-item" active-class="mobile-nav-active"><v-icon name="fa-database"/> Database</router-link>
+        </div>
+        
+        <div class="p-4 border-t border-slate-700/50 bg-slate-800/30">
+          <span class="text-xs text-slate-500 font-mono mb-2 block">TIME FRAME FILTER</span>
+          <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
+            <span class="text-primary text-sm">📅</span>
+            <select v-model="yearFrom" class="bg-transparent text-slate-300 text-sm font-bold focus:outline-none w-full">
+              <option value="All">Start: All</option><option v-for="y in availableYears" :value="y">{{ y }}</option>
+            </select>
+            <span class="text-slate-500">-</span>
+            <select v-model="yearTo" class="bg-transparent text-slate-300 text-sm font-bold focus:outline-none w-full">
+              <option value="All">End: 2023</option><option v-for="y in availableYears" :value="y">{{ y }}</option>
+            </select>
+          </div>
+        </div>
       </nav>
     </transition>
   </header>
@@ -63,10 +74,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useMovies } from '../../composables/useMovies'
+
+// Tarik fungsi filter waktu dari useMovies
+const { yearFrom, yearTo, availableYears } = useMovies()
 
 const isMobileMenuOpen = ref(false)
 const route = useRoute()
-
 const currentRouteName = computed(() => {
   if (route.path === '/') return 'Overview'
   if (route.path === '/ratings') return 'Ratings'

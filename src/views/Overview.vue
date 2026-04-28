@@ -44,49 +44,57 @@ import { Doughnut, Line, Bar } from 'vue-chartjs'
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler)
 
-const { movies, isLoading, error, fetchMovies } = useMovies()
+// 🔥 AMBIL filteredMoviesByTime DARI STATE GLOBAL
+const { filteredMoviesByTime, isLoading, error, fetchMovies } = useMovies()
 onMounted(() => fetchMovies())
 
-const totalMovies = computed(() => movies.value.length)
+// Semuanya sekarang bereaksi terhadap filteredMoviesByTime
+const totalMovies = computed(() => filteredMoviesByTime.value.length)
 const avgRating = computed(() => {
-  if (movies.value.length === 0) return 0
-  const sum = movies.value.reduce((acc, curr) => acc + (parseFloat(curr.imdbrating) || 0), 0)
-  return (sum / movies.value.length).toFixed(1)
+  if (filteredMoviesByTime.value.length === 0) return 0
+  const sum = filteredMoviesByTime.value.reduce((acc, curr) => acc + (parseFloat(curr.imdbrating) || 0), 0)
+  return (sum / filteredMoviesByTime.value.length).toFixed(1)
 })
 const topGenre = computed(() => {
   const counts = {}
-  movies.value.forEach(m => { if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 }) })
-  return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '')
+  filteredMoviesByTime.value.forEach(m => { if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 }) })
+  return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '') || '-'
 })
 const formattedTotalVotes = computed(() => {
-  const sum = movies.value.reduce((acc, curr) => acc + (parseInt(curr.numvotes) || 0), 0)
+  const sum = filteredMoviesByTime.value.reduce((acc, curr) => acc + (parseInt(curr.numvotes) || 0), 0)
   return formatLargeNumber(sum)
 })
 
-const colorBlue = 'rgba(59, 130, 246, 0.8)', colorCyan = 'rgba(6, 182, 212, 0.8)', colorIndigo = 'rgba(99, 102, 241, 0.8)', colorHover = 'rgba(0, 240, 255, 1)'
+const colorBlue = 'rgba(59, 130, 246, 0.8)'
+const colorCyan = 'rgba(6, 182, 212, 0.8)'
+const colorIndigo = 'rgba(99, 102, 241, 0.8)'
+const colorHover = 'rgba(0, 240, 255, 1)'
 
 const typeChartData = computed(() => {
   let movieCount = 0, tvCount = 0
-  movies.value.forEach(m => { if (m.type === 'Movie') movieCount++; else if (m.type === 'TV Show') tvCount++ })
-  const total = movieCount + tvCount
+  filteredMoviesByTime.value.forEach(m => { if (m.type === 'Movie') movieCount++; else if (m.type === 'TV Show') tvCount++ })
+  const total = movieCount + tvCount || 1 // Hindari divide by zero
   return {
     labels: [`Movie (${((movieCount / total) * 100).toFixed(1)}%)`, `TV Show (${((tvCount / total) * 100).toFixed(1)}%)`],
     datasets: [{ data: [movieCount, tvCount], backgroundColor: [colorBlue, colorCyan], hoverBackgroundColor: [colorHover, colorHover], borderWidth: 0, hoverOffset: 15 }]
   }
 })
+
 const trendChartData = computed(() => {
   let yearCounts = {}
-  movies.value.forEach(d => { let yr = d.releaseyear; if (yr >= 1980 && yr <= 2023) yearCounts[yr] = (yearCounts[yr] || 0) + 1 })
+  filteredMoviesByTime.value.forEach(d => { let yr = d.releaseyear; if (yr >= 1980 && yr <= 2023) yearCounts[yr] = (yearCounts[yr] || 0) + 1 })
   const sortedYears = Object.keys(yearCounts).sort((a,b) => a - b)
   return { labels: sortedYears, datasets: [{ label: 'Content Released', data: sortedYears.map(y => yearCounts[y]), borderColor: colorCyan, backgroundColor: 'rgba(6, 182, 212, 0.15)', fill: true, tension: 0.4, pointBackgroundColor: colorCyan, pointHoverBackgroundColor: colorHover, pointRadius: 0, pointHoverRadius: 6 }] }
 })
+
 const genreChartData = computed(() => {
   const counts = {}
-  movies.value.forEach(m => { if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 }) })
+  filteredMoviesByTime.value.forEach(m => { if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 }) })
   const sorted = Object.keys(counts).map(k => ({name: k, count: counts[k]})).sort((a,b) => b.count - a.count).slice(0, 10)
   return { labels: sorted.map(g => g.name), datasets: [{ label: 'Number of Titles', data: sorted.map(g => g.count), backgroundColor: colorIndigo, hoverBackgroundColor: colorHover, borderRadius: 4 }] }
 })
 
+// Options
 const commonTooltip = { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#00f0ff', bodyColor: '#e2e8f0', borderColor: 'rgba(6, 182, 212, 0.3)', borderWidth: 1, padding: 12, cornerRadius: 8 }
 const chartOptions = { responsive: true, maintainAspectRatio: false, animation: { duration: 1500, easing: 'easeOutQuart' }, plugins: { legend: { position: 'right', labels: { color: '#cbd5e1' } }, tooltip: commonTooltip }, scales: { x: { display: false }, y: { display: false } } }
 const lineOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, animation: { duration: 1500, easing: 'easeOutQuart' }, plugins: { legend: { display: false }, tooltip: commonTooltip }, scales: { x: { ticks: { color: '#64748b' }, grid: { display: false } }, y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.3)', borderDash: [5, 5] } } } }
