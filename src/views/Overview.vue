@@ -33,7 +33,7 @@
         <div class="bg-cardbg backdrop-blur-xl p-6 rounded-2xl border border-slate-700/50 tech-card group col-span-1">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">🍪</div>
-            <h4 class="text-lg font-bold text-white tracking-wide">1. Content Type</h4>
+            <h4 class="text-lg font-bold text-white tracking-wide">Content Type</h4>
           </div>
           <div class="h-64"><Doughnut :data="typeChartData" :options="chartOptions" /></div>
         </div>
@@ -41,7 +41,7 @@
         <div class="bg-cardbg backdrop-blur-xl p-6 rounded-2xl border border-slate-700/50 tech-card group col-span-1 lg:col-span-2">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">📉</div>
-            <h4 class="text-lg font-bold text-white tracking-wide">3. Content Release Trend</h4>
+            <h4 class="text-lg font-bold text-white tracking-wide">Content Release Trend</h4>
           </div>
           <div class="h-64"><Line :data="trendChartData" :options="lineOptions" /></div>
         </div>
@@ -49,7 +49,7 @@
         <div class="bg-cardbg backdrop-blur-xl p-6 rounded-2xl border border-slate-700/50 tech-card group col-span-1 lg:col-span-3">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">📊</div>
-            <h4 class="text-lg font-bold text-white tracking-wide">4. Top 10 Genres</h4>
+            <h4 class="text-lg font-bold text-white tracking-wide">Top 10 Genres</h4>
           </div>
           <div class="h-80"><Bar :data="genreChartData" :options="horizontalBarOptions" /></div>
         </div>
@@ -60,7 +60,7 @@
 
 <script setup>
 import { onMounted, computed } from 'vue'
-import { useMovies, formatLargeNumber } from '../composables/useMovies' // Import formatHelper
+import { useMovies, formatLargeNumber } from '../composables/useMovies'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler } from 'chart.js'
 import { Doughnut, Line, Bar } from 'vue-chartjs'
 
@@ -69,7 +69,6 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 const { movies, isLoading, error, fetchMovies } = useMovies()
 onMounted(() => fetchMovies())
 
-// Logic KPI
 const totalMovies = computed(() => movies.value.length)
 const avgRating = computed(() => {
   if (movies.value.length === 0) return 0
@@ -82,41 +81,29 @@ const topGenre = computed(() => {
   return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '')
 })
 
-// Gunakan format helper untuk KPI Votes
 const formattedTotalVotes = computed(() => {
   const sum = movies.value.reduce((acc, curr) => acc + (parseInt(curr.numvotes) || 0), 0)
-  return formatLargeNumber(sum) // Gunakan formatLargeNumber di sini
+  return formatLargeNumber(sum)
 })
 
-// --- WARNA ---
 const colorBlue = 'rgba(59, 130, 246, 0.8)'
 const colorCyan = 'rgba(6, 182, 212, 0.8)'
 const colorIndigo = 'rgba(99, 102, 241, 0.8)'
 const colorHover = 'rgba(0, 240, 255, 1)'
 
-// Logic Chart 1: Donut Tipe Konten (Ubah ke Persentase dengan Legenda Jelas)
 const typeChartData = computed(() => {
   let movieCount = 0, tvCount = 0
   movies.value.forEach(m => { if (m.type === 'Movie') movieCount++; else if (m.type === 'TV Show') tvCount++ })
   const total = movieCount + tvCount
-  
-  // Hitung Persentase
   const moviePercent = ((movieCount / total) * 100).toFixed(1)
   const tvPercent = ((tvCount / total) * 100).toFixed(1)
 
   return {
-    labels: [`Movie (${moviePercent}%)`, `TV Show (${tvPercent}%)`], // Ubah Label Legenda
-    datasets: [{ 
-      data: [movieCount, tvCount], // Data tetap absolut untuk proporsi chart
-      backgroundColor: [colorBlue, colorCyan], 
-      hoverBackgroundColor: [colorHover, colorHover], 
-      borderWidth: 0, 
-      hoverOffset: 15 
-    }]
+    labels: [`Movie (${moviePercent}%)`, `TV Show (${tvPercent}%)`],
+    datasets: [{ data: [movieCount, tvCount], backgroundColor: [colorBlue, colorCyan], hoverBackgroundColor: [colorHover, colorHover], borderWidth: 0, hoverOffset: 15 }]
   }
 })
 
-// Logic Chart 3: Tren Rilis Konten (English)
 const trendChartData = computed(() => {
   let yearCounts = {}
   movies.value.forEach(d => {
@@ -134,7 +121,6 @@ const trendChartData = computed(() => {
   }
 })
 
-// Logic Chart 4: Top Genres (English)
 const genreChartData = computed(() => {
   const counts = {}
   movies.value.forEach(m => { if(m.genres) m.genres.split(',').forEach(g => { counts[g.trim()] = (counts[g.trim()] || 0) + 1 }) })
@@ -145,14 +131,11 @@ const genreChartData = computed(() => {
   }
 })
 
-// --- CHART OPTIONS ---
 const commonTooltip = { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#00f0ff', bodyColor: '#e2e8f0', borderColor: 'rgba(6, 182, 212, 0.3)', borderWidth: 1, padding: 12, cornerRadius: 8 }
 
-// Opsi Donut (English tooltip & clearly visible legend)
 const chartOptions = {
   responsive: true, maintainAspectRatio: false, animation: { duration: 1500, easing: 'easeOutQuart' },
   plugins: { legend: { position: 'right', labels: { color: '#cbd5e1' } }, tooltip: commonTooltip },
-  // y-axis dan x-axis dan grid line di donut dihilangin aja mas keknya
   scales: { x: { display: false }, y: { display: false } } 
 }
 
@@ -164,6 +147,7 @@ const lineOptions = {
 
 const horizontalBarOptions = {
   responsive: true, maintainAspectRatio: false, indexAxis: 'y', animation: { duration: 1500, easing: 'easeOutQuart' },
+  interaction: { mode: 'index', axis: 'y', intersect: false },
   plugins: { legend: { display: false }, tooltip: commonTooltip },
   scales: { x: { grid: { color: 'rgba(51, 65, 85, 0.3)', borderDash: [5,5] }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '500' } } } }
 }

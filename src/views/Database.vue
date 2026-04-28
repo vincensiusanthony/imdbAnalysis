@@ -81,7 +81,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useMovies } from '../composables/useMovies'
-import { OhVueIcon as VIcon } from 'oh-vue-icons' // Ensure OhVueIcon is imported
 
 const { movies, isLoading, fetchMovies } = useMovies()
 
