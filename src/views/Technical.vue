@@ -7,7 +7,7 @@
     
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <ChartCard title="Genre Quality Evolution (2000-2023)" icon="📈" heightClass="h-96" colSpanClass="col-span-1 lg:col-span-2" iconBgClass="bg-indigo-500/20" iconTextClass="text-indigo-400">
+      <ChartCard title="Genre Quality Evolution" icon="📈" heightClass="h-96" colSpanClass="col-span-1 lg:col-span-2" iconBgClass="bg-indigo-500/20" iconTextClass="text-indigo-400">
         <Line :data="genreTrendData" :options="interactiveLineOptions" />
       </ChartCard>
 
